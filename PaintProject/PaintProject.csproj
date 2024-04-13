@@ -11,6 +11,7 @@
   <ItemGroup>
     <None Remove="Images\Ellipse.png" />
     <None Remove="Images\Line.png" />
+    <None Remove="Images\None.png" />
     <None Remove="Images\Rectangle.png" />
     <None Remove="Images\save-icon.png" />
   </ItemGroup>
@@ -26,6 +27,7 @@
     <Resource Include="Images\Line.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Images\None.png" />
     <Resource Include="Images\Rectangle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>

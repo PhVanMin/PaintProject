@@ -34,6 +34,7 @@ namespace PaintProject {
             _newElement = true;
             _painter.AddFirst(e.GetPosition(myCanvas));
             _painter.SetStroke((SolidColorBrush)ColorList.SelectedItem);
+            _painter.SetFill((SolidColorBrush)FillColorList.SelectedItem??(new SolidColorBrush(Colors.Transparent)));
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e) {
@@ -69,7 +70,16 @@ namespace PaintProject {
 
             ColorList.ItemsSource = colors;
             ColorList.SelectedIndex = 0;
+            FillColorList.ItemsSource = colors;
             ShapeList.ItemsSource = _painters;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e) {
+
+        }
+
+        private void RemoveFill_Click(object sender, RoutedEventArgs e) {
+            FillColorList.SelectedIndex = -1;
         }
     }
 }

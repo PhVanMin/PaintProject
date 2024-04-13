@@ -51,7 +51,7 @@ namespace PaintProject {
         }
 
         public void SetFill(SolidColorBrush colorFill) {
-            throw new NotImplementedException();
+            
         }
 
         public void SetStroke(SolidColorBrush colorBrush) {

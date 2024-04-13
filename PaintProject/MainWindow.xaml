@@ -45,7 +45,6 @@
                 <Fluent:RibbonGroupBox Header="Color">
                     <ListView
                         Margin="5"
-                        BorderThickness="0"
                     Name="ColorList" 
                     ScrollViewer.VerticalScrollBarVisibility="Hidden"
                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -66,7 +65,30 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </Fluent:RibbonGroupBox>
-                
+                <Fluent:RibbonGroupBox Header="Fill">
+                    <Fluent:Button Header="No fill" Icon="/Images/None.png" Click="RemoveFill_Click"/>
+                    <ListView
+                        Margin="5"
+                        Name="FillColorList" 
+                        ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        Width="103" Height="65"
+                        HorizontalAlignment="Center" VerticalAlignment="Top" d:ItemsSource="{d:SampleData ItemCount=5}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Ellipse
+                                    Width="15"
+                                    Height="15"
+                                    Fill="{Binding}"/>      
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
         <Grid>
