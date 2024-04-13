@@ -19,11 +19,22 @@ namespace PaintProject {
         bool _isDrawing = false;
         bool _newElement;
         IShape? _painter = null;
-
+        ShortcutCommand _command;
         List<IShape> _painters = new List<IShape>();
         List<IShape> _prototypes = new List<IShape>();
         public MainWindow() {
             InitializeComponent();
+            _command = new ShortcutCommand(p => true, () => Undo());
+            InputBindings.Add(
+                new KeyBinding(_command, new KeyGesture(Key.Z, ModifierKeys.Control))
+            );
+        }
+
+        private void Undo() {
+            if (_prototypes.Count > 0) {
+                _prototypes.RemoveAt(_prototypes.Count - 1);
+                myCanvas.Children.RemoveAt(myCanvas.Children.Count - 1);
+            }
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
@@ -67,6 +78,7 @@ namespace PaintProject {
             _painters.Add(new MyLine());
             _painters.Add(new MyRectangle());
             _painters.Add(new MyEllipse());
+            _painters.Add(new MyRightArrow());
 
             ColorList.ItemsSource = colors;
             ColorList.SelectedIndex = 0;

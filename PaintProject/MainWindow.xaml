@@ -92,9 +92,8 @@
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
         <Grid>
-            
-        <Canvas x:Name="myCanvas"/>
-        <Canvas 
+            <Canvas x:Name="myCanvas"/>
+            <Canvas 
             Background="Transparent" 
             MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
             MouseMove="Canvas_MouseMove" 

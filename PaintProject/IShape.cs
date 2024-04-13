@@ -19,6 +19,53 @@ namespace PaintProject {
         string Icon { get; }
     }
 
+    public class MyRightArrow : IShape {
+        private Point _first;
+        private Point _second;
+        private double _thickness = 1;
+        private SolidColorBrush _colorStroke = new SolidColorBrush(Colors.Black);
+        private SolidColorBrush _colorFill = new SolidColorBrush(Colors.Transparent);
+        public string Icon => $"/Images/{nameof(MyRightArrow)}.png";
+
+        public void AddFirst(Point point) {
+            _first = point;
+        }
+
+        public void AddSecond(Point point) {
+            _second = point;
+        }
+
+        public object Clone() {
+            return MemberwiseClone();
+        }
+
+        public UIElement Convert() {
+            var item = new Path() {
+                Data = Geometry.Parse("M0,50 L100,50 L100,0 L200,80 L100,160 L100,110 L0,110 L0,50"),
+                Width = Math.Abs(_first.X - _second.X),
+                Height = Math.Abs(_first.Y - _second.Y),
+                StrokeThickness = _thickness,
+                Stretch = Stretch.Fill,
+                Stroke = _colorStroke,
+                Fill = _colorFill,
+            };
+            Canvas.SetLeft(item, _first.X < _second.X ? _first.X : _second.X);
+            Canvas.SetTop(item, _first.Y < _second.Y ? _first.Y : _second.Y);
+            return item;
+        }
+
+        public void SetFill(SolidColorBrush colorFill) {
+            _colorFill = colorFill;
+        }
+
+        public void SetStroke(SolidColorBrush colorBrush) {
+            _colorStroke = colorBrush;
+        }
+
+        public void SetThickness(double thickness) {
+            _thickness = thickness;
+        }
+    }
     public class MyLine : IShape {
         private Point _first;
         private Point _second;
