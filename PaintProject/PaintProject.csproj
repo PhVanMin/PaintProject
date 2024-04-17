@@ -11,10 +11,11 @@
   <ItemGroup>
     <None Remove="Images\Ellipse.png" />
     <None Remove="Images\Line.png" />
+    <None Remove="Images\Load.png" />
     <None Remove="Images\MyRightArrow.png" />
     <None Remove="Images\None.png" />
     <None Remove="Images\Rectangle.png" />
-    <None Remove="Images\save-icon.png" />
+    <None Remove="Images\Save.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\Load.png" />
     <Resource Include="Images\MyRightArrow.png" />
     <Resource Include="Images\Ellipse.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -33,9 +35,7 @@
     <Resource Include="Images\Rectangle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Images\save-icon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="Images\Save.png" />
   </ItemGroup>
 
 </Project>

@@ -6,9 +6,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PaintProject"
         mc:Ignorable="d"
-                     Loaded="RibbonWindow_Loaded"
+        Closing="RibbonWindow_Closing"
+        Loaded="RibbonWindow_Loaded"
         WindowStartupLocation="CenterScreen"
-        Title="MainWindow" Height="600" Width="800">
+        Title="Project Paint" Height="600" Width="800">
     <Fluent:RibbonWindow.Resources>
         <!--<SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.Background">LightBlue</SolidColorBrush>
         <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Background">LightBlue</SolidColorBrush>
@@ -16,11 +17,18 @@
         <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonWindow.TitleBackground">LightBlue</SolidColorBrush>-->
     </Fluent:RibbonWindow.Resources>
     <DockPanel LastChildFill="True">
-        <Fluent:Ribbon
+        <Fluent:Ribbon 
             DockPanel.Dock="Top">
             <Fluent:RibbonTabItem  Header="Home">
-                <Fluent:RibbonGroupBox Header="Save">
-                    <Fluent:Button Padding="5" Header="Save" Icon="/Images/save-icon.png"/>
+                <Fluent:RibbonGroupBox Header="File">
+                    <Fluent:SplitButton Padding="5" Header="Save" Icon="/Images/Save.png">
+                        <Fluent:MenuItem Click="Save_Click" Header="Save"/>
+                        <Fluent:MenuItem Click="SaveAs_Click" Header="Save as PNG"/>
+                    </Fluent:SplitButton>
+                    <Fluent:SplitButton Margin="10 0 0 0" Padding="5" Header="Load" Icon="/Images/Load.png">
+                        <Fluent:MenuItem Click="Load_Click" Header="Load from"/>
+                        <Fluent:MenuItem Click="LoadImage_Click" Header="Load image"/>
+                    </Fluent:SplitButton>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Shapes">
                     <ListView Margin="5"
@@ -66,7 +74,7 @@
                     </ListView>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Fill">
-                    <Fluent:Button Header="No fill" Icon="/Images/None.png" Click="RemoveFill_Click"/>
+                    <Fluent:Button Header="None" Icon="/Images/None.png" Click="RemoveFill_Click"/>
                     <ListView
                         Margin="5"
                         Name="FillColorList" 

@@ -1,202 +1,120 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Xml;
+using System.Xml.Schema;
+using System.Xml.Serialization;
 
 namespace PaintProject {
     public interface IShape : ICloneable {
         void AddFirst(Point point);
         void AddSecond(Point point);
         void SetThickness(double thickness);
-        void SetStroke(SolidColorBrush colorStroke);
+        void SetStrokeColor(SolidColorBrush colorStroke);
         void SetFill(SolidColorBrush colorFill);
         UIElement Convert();
-        string Icon { get; }
     }
-
-    public class MyRightArrow : IShape {
-        private Point _first;
-        private Point _second;
-        private double _thickness = 1;
-        private SolidColorBrush _colorStroke = new SolidColorBrush(Colors.Black);
-        private SolidColorBrush _colorFill = new SolidColorBrush(Colors.Transparent);
-        public string Icon => $"/Images/{nameof(MyRightArrow)}.png";
+    public class MyShape : IShape {
+        public Point First { get; set; }
+        public Point Second { get; set; }
+        public double Thickness { get; set; } = 1;
+        public Color? ColorStroke { get; set; }
+        public Color? ColorFill { get; set; }
+        public virtual string? Icon { get; }
 
         public void AddFirst(Point point) {
-            _first = point;
+            First = point;
         }
 
         public void AddSecond(Point point) {
-            _second = point;
+            Second = point;
         }
 
-        public object Clone() {
-            return MemberwiseClone();
+        public object Clone() { return MemberwiseClone(); }
+
+        public virtual UIElement Convert() => null;
+
+        public void SetFill(SolidColorBrush colorFill) {
+            ColorFill = colorFill.Color;
         }
 
-        public UIElement Convert() {
+        public void SetStrokeColor(SolidColorBrush colorStroke) {
+            ColorStroke = colorStroke.Color;
+        }
+
+        public void SetThickness(double thickness) {
+            Thickness = thickness;
+        }
+    }
+    public class MyRightArrow : MyShape {
+        public override string Icon => $"/Images/{nameof(MyRightArrow)}.png";
+
+        public override UIElement Convert() {
             var item = new Path() {
                 Data = Geometry.Parse("M0,50 L100,50 L100,0 L200,80 L100,160 L100,110 L0,110 L0,50"),
-                Width = Math.Abs(_first.X - _second.X),
-                Height = Math.Abs(_first.Y - _second.Y),
-                StrokeThickness = _thickness,
+                Width = Math.Abs(First.X - Second.X),
+                Height = Math.Abs(First.Y - Second.Y),
+                StrokeThickness = Thickness,
                 Stretch = Stretch.Fill,
-                Stroke = _colorStroke,
-                Fill = _colorFill,
+                Stroke = new SolidColorBrush(ColorStroke??Colors.Black),
+                Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent),
             };
-            Canvas.SetLeft(item, _first.X < _second.X ? _first.X : _second.X);
-            Canvas.SetTop(item, _first.Y < _second.Y ? _first.Y : _second.Y);
+            Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
+            Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
             return item;
         }
-
-        public void SetFill(SolidColorBrush colorFill) {
-            _colorFill = colorFill;
-        }
-
-        public void SetStroke(SolidColorBrush colorBrush) {
-            _colorStroke = colorBrush;
-        }
-
-        public void SetThickness(double thickness) {
-            _thickness = thickness;
-        }
     }
-    public class MyLine : IShape {
-        private Point _first;
-        private Point _second;
-        private double _thickness = 1;
-        private SolidColorBrush _colorStroke = new SolidColorBrush(Colors.Black);
+    public class MyLine : MyShape {
+        public override string Icon => "/Images/Line.png";
 
-        public string Icon => "/Images/Line.png";
-
-        public void AddFirst(Point point) {
-            _first = point;
-        }
-
-        public void AddSecond(Point point) {
-            _second = point;
-        }
-
-        public object Clone() {
-            return MemberwiseClone();
-        }
-
-        public UIElement Convert() {
+        public override UIElement Convert() {
             return new Line() {
-                X1 = _first.X,
-                Y1 = _first.Y,
-                X2 = _second.X,
-                Y2 = _second.Y,
-                StrokeThickness = _thickness,
-                Stroke = _colorStroke
+                X1 = First.X,
+                Y1 = First.Y,
+                X2 = Second.X,
+                Y2 = Second.Y,
+                StrokeThickness = Thickness,
+                Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black)
             };
         }
-
-        public void SetFill(SolidColorBrush colorFill) {
-            
-        }
-
-        public void SetStroke(SolidColorBrush colorBrush) {
-            _colorStroke = colorBrush;
-        }
-
-        public void SetThickness(double thickness) {
-            _thickness = thickness;
-        }
     }
-    public class MyRectangle : IShape {
-        private Point _first;
-        private Point _second;
-        private double _thickness = 1;
-        private SolidColorBrush _colorStroke = new SolidColorBrush(Colors.Black);
-        private SolidColorBrush _colorFill = new SolidColorBrush(Colors.Transparent);
-        public string Icon => "/Images/Rectangle.png";
+    public class MyRectangle : MyShape {
+        public override string Icon => "/Images/Rectangle.png";
 
-        public void AddFirst(Point point) {
-            _first = point;
-        }
-
-        public void AddSecond(Point point) {
-            _second = point;
-        }
-
-        public UIElement Convert() {
+        public override UIElement Convert() {
             var item = new Rectangle() {
-                Width = Math.Abs(_first.X - _second.X),
-                Height = Math.Abs(_first.Y - _second.Y),
-                StrokeThickness = _thickness,
-                Stroke = _colorStroke,
-                Fill = _colorFill,
+                Width = Math.Abs(First.X - Second.X),
+                Height = Math.Abs(First.Y - Second.Y),
+                StrokeThickness = Thickness,
+                Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black),
+                Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent),
             };
-            Canvas.SetLeft(item, _first.X < _second.X ? _first.X : _second.X);
-            Canvas.SetTop(item, _first.Y < _second.Y ? _first.Y : _second.Y);
+            Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
+            Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
             return item;
-        }
-
-        public object Clone() {
-            return MemberwiseClone();
-        }
-
-        public void SetFill(SolidColorBrush colorFill) {
-            _colorFill = colorFill;
-        }
-
-        public void SetStroke(SolidColorBrush colorBrush) {
-            _colorStroke = colorBrush;
-        }
-
-        public void SetThickness(double thickness) {
-            _thickness = thickness;
         }
     }
-    public class MyEllipse : IShape {
-        private Point _first;
-        private Point _second;
-        private double _thickness = 1;
-        private SolidColorBrush _colorStroke = new SolidColorBrush(Colors.Black);
-        private SolidColorBrush _colorFill = new SolidColorBrush(Colors.Transparent);
-        public string Icon => "/Images/Ellipse.png";
-
-        public void AddFirst(Point point) {
-            _first = point;
-        }
-
-        public void AddSecond(Point point) {
-            _second = point;
-        }
-
-        public object Clone() {
-            return MemberwiseClone();
-        }
-
-        public UIElement Convert() {
+    public class MyEllipse : MyShape {
+        public override string Icon => "/Images/Ellipse.png";
+        public override UIElement Convert() {
             var item = new Ellipse() {
-                Width = Math.Abs(_first.X - _second.X),
-                Height = Math.Abs(_first.Y - _second.Y),
-                StrokeThickness = _thickness,
-                Stroke = _colorStroke,
-                Fill = _colorFill,
+                Width = Math.Abs(First.X - Second.X),
+                Height = Math.Abs(First.Y - Second.Y),
+                StrokeThickness = Thickness,
+                Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black),
+                Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent),
             };
-            Canvas.SetLeft(item, _first.X < _second.X ? _first.X : _second.X);
-            Canvas.SetTop(item, _first.Y < _second.Y ? _first.Y : _second.Y);
+            Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
+            Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
             return item;
-        }
-
-        public void SetFill(SolidColorBrush colorFill) {
-            _colorFill = colorFill;
-        }
-
-        public void SetStroke(SolidColorBrush colorBrush) {
-            _colorStroke = colorBrush;
-        }
-
-        public void SetThickness(double thickness) {
-            _thickness = thickness;
         }
     }
 }
