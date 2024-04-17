@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\dash-dot-dot-line.png" />
+    <None Remove="Images\dashed-line.png" />
+    <None Remove="Images\dot-line.png" />
     <None Remove="Images\Ellipse.png" />
     <None Remove="Images\Line.png" />
     <None Remove="Images\Load.png" />
@@ -16,6 +19,7 @@
     <None Remove="Images\None.png" />
     <None Remove="Images\Rectangle.png" />
     <None Remove="Images\Save.png" />
+    <None Remove="Images\solid.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\dash-dot-dot-line.png" />
+    <Resource Include="Images\dashed-line.png" />
+    <Resource Include="Images\dot-line.png" />
     <Resource Include="Images\Load.png" />
     <Resource Include="Images\MyRightArrow.png" />
     <Resource Include="Images\Ellipse.png">
@@ -36,6 +43,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\Save.png" />
+    <Resource Include="Images\solid.png" />
   </ItemGroup>
 
 </Project>

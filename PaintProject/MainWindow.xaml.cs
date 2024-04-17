@@ -3,6 +3,7 @@ using Fluent.Localization.Languages;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -31,6 +32,14 @@ namespace PaintProject {
         bool _newElement;
         IShape? _painter = null;
         List<IShape> _painters = new List<IShape>();
+        private List<Tuple<string, string>> strokes = new List<Tuple<string, string>>
+        {
+            Tuple.Create("Solid", "/Images/solid.png"),
+            Tuple.Create("Dash", "/Images/dashed-line.png"),
+            Tuple.Create("Dot", "/Images/dot-line.png"),
+            Tuple.Create("Dash dot dot", "/Images/dash-dot-dot-line.png"),
+            
+        };
         public Stack<IShape> Prototypes { get; } = new Stack<IShape>();
         public Stack<IShape> DeletedPrototypes { get; } = new Stack<IShape>();
         public MainWindow() {
@@ -38,7 +47,41 @@ namespace PaintProject {
             Shortcut shortcut = new Shortcut(this);
             InputBindings.AddRange(shortcut.KeyBindings);        
         }
-
+        private void StrokeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Tuple<string, string>? selectedItem = (Tuple<string, string>)StrokeComboBox.SelectedItem;
+            if (selectedItem != null)
+            {
+                string strokeType = selectedItem.Item1; 
+                switch (strokeType)
+                {
+                    case "Solid":
+                        foreach (var shape in _painters)
+                        {
+                            shape.SetStrokeType(StrokeType.Solid);
+                        }
+                        break;
+                    case "Dash":
+                        foreach (var shape in _painters)
+                        {
+                            shape.SetStrokeType(StrokeType.Dash);
+                        }
+                        break;
+                    case "Dot":
+                        foreach (var shape in _painters)
+                        {
+                            shape.SetStrokeType(StrokeType.Dot);
+                        }
+                        break;
+                    case "Dash dot dot":
+                        foreach (var shape in _painters)
+                        {
+                            shape.SetStrokeType(StrokeType.DashDotDot);
+                        }
+                        break;
+                }
+            }
+        }
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             _painter = (IShape?) ShapeList.SelectedItem;
             if (_painter == null) 
@@ -89,6 +132,8 @@ namespace PaintProject {
             ColorList.SelectedIndex = 0;
             FillColorList.ItemsSource = colors;
             ShapeList.ItemsSource = _painters;
+
+            StrokeComboBox.ItemsSource = strokes;
         }
 
         private void RemoveFill_Click(object sender, RoutedEventArgs e) {

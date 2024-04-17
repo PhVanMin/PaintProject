@@ -30,6 +30,7 @@
                         <Fluent:MenuItem Click="LoadImage_Click" Header="Load image"/>
                     </Fluent:SplitButton>
                 </Fluent:RibbonGroupBox>
+                
                 <Fluent:RibbonGroupBox Header="Shapes">
                     <ListView Margin="5"
                         Name="ShapeList" 
@@ -49,7 +50,19 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </Fluent:RibbonGroupBox>
-
+                <Fluent:RibbonGroupBox Header="Stroke">
+                    <ComboBox x:Name="StrokeComboBox" SelectionChanged="StrokeComboBox_SelectionChanged" Width="80"
+          Height="50" Margin="5">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Item2}" Width="30" Height="30"/>
+                                    <TextBlock Text="{Binding Item1}" Margin="10"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Color">
                     <ListView
                         Margin="5"
