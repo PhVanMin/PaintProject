@@ -1,26 +1,18 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Xml;
-using System.Xml.Schema;
-using System.Xml.Serialization;
 
 namespace PaintProject {
     public interface IShape : ICloneable {
         void AddFirst(Point point);
         void AddSecond(Point point);
-        void SetThickness(double thickness);
-        void SetStrokeColor(SolidColorBrush colorStroke);
-        void SetFill(SolidColorBrush colorFill);
         UIElement Convert();
+        void SetFill(SolidColorBrush colorFill);
+        void SetStrokeColor(SolidColorBrush colorStroke);
+        void SetThickness(double thickness);
     }
     public class MyShape : IShape {
         public Point First { get; set; }
@@ -95,7 +87,7 @@ namespace PaintProject {
                 Height = Math.Abs(First.Y - Second.Y),
                 StrokeThickness = Thickness,
                 Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black),
-                Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent),
+                Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent)
             };
             Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
             Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
@@ -111,6 +103,40 @@ namespace PaintProject {
                 StrokeThickness = Thickness,
                 Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black),
                 Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent),
+            };
+            Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
+            Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
+            return item;
+        }
+    }
+    public class MyImage : MyShape {
+        private BitmapSource _bitmapSource;
+        public void SetSource(BitmapSource bitmapSource) {
+            _bitmapSource = bitmapSource;
+        }
+        public override UIElement Convert() {
+            return new Image() {
+                Source = _bitmapSource,
+            };
+        }
+    }
+    public class MyText : MyShape {
+        public override string Icon => "/Images/Text.png";
+        public override UIElement Convert() {
+            var item = new TextBox() {
+                Width = Math.Abs(First.X - Second.X),
+                Height = Math.Abs(First.Y - Second.Y),
+                Background = new SolidColorBrush(ColorFill ?? Colors.Transparent),
+                Foreground = new SolidColorBrush(ColorStroke ?? Colors.Black),
+                Focusable = true,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                TextWrapping = TextWrapping.Wrap,
+                FontSize = (Math.Abs(First.Y - Second.Y) * 0.2) + 1
+            };
+            item.LostFocus += (object sender, RoutedEventArgs e) => {
+                item.BorderThickness = new Thickness(0);
+                item.Focusable = false;
             };
             Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
             Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);

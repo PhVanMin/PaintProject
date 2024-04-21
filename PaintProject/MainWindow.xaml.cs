@@ -1,164 +1,177 @@
 ﻿using Fluent;
-using Fluent.Localization.Languages;
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Xml;
-using System.Xml.Schema;
-using System.Xml.Serialization;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace PaintProject {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : RibbonWindow {
-        string _fileName = "data.myext";
-        bool _isDrawing = false;
-        bool _newElement;
-        IShape? _painter = null;
-        List<IShape> _painters = new List<IShape>();
+        private bool _isDrawing = false;
+        private bool _isClick;
+        private bool _textBoxFocus = false;
+
+        private IShape? _painter = null;
+        IFactory? _dataFactory;
+        IExporter? _dataExporter;
+        IImporter? _dataImporter;
+        ExportVisitor _exportVisitor;
+
+        public List<IShape> Painters = new List<IShape>();
         public Stack<IShape> Prototypes { get; } = new Stack<IShape>();
         public Stack<IShape> DeletedPrototypes { get; } = new Stack<IShape>();
+
         public MainWindow() {
             InitializeComponent();
-            Shortcut shortcut = new Shortcut(this);
-            InputBindings.AddRange(shortcut.KeyBindings);        
+            _exportVisitor = new ExportVisitor(this);
+            InputBindings.AddRange(Shortcut.Create(myCanvas, Prototypes, DeletedPrototypes).KeyBindings);        
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-            _painter = (IShape?) ShapeList.SelectedItem;
-            if (_painter == null) 
-                return;
-            DeletedPrototypes.Clear();
-            _isDrawing = true;
-            _newElement = true;
-            _painter.AddFirst(e.GetPosition(myCanvas));
-            _painter.SetStrokeColor((SolidColorBrush)ColorList.SelectedItem);
-            _painter.SetFill((SolidColorBrush)FillColorList.SelectedItem??(new SolidColorBrush(Colors.Transparent)));
+            if (_textBoxFocus) {
+                HandleTextBoxFocus(e.GetPosition(myCanvas));
+            } else if (_painter != null) {
+                _isClick = true;
+                StartDrawingAt(e.GetPosition(myCanvas));
+            }
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e) {
             if (_isDrawing) {
-                if (_newElement) {
-                    _newElement = false;
-                } else {
-                    myCanvas.Children.RemoveAt(myCanvas.Children.Count - 1);
-                }
-
-                _painter?.AddSecond(e.GetPosition(myCanvas));
-                myCanvas.Children.Add(_painter.Convert());
+                RemovePreviousPreview(myCanvas);
+                DrawPreviewAt(e.GetPosition(myCanvas));
             }
         }
-
+        
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
-            if (_isDrawing) {
+            if (_isDrawing && !_isClick) {
+                HandleTextBoxDrawing(myCanvas);
+                FinishDrawing();
+            } else {
                 _isDrawing = false;
-                Prototypes.Push((IShape)_painter.Clone());
             }
         }
 
         private void RibbonWindow_Loaded(object sender, RoutedEventArgs e) {
-            List<SolidColorBrush> colors = new List<SolidColorBrush>() {
-                new SolidColorBrush(Colors.Black),
-                new SolidColorBrush(Colors.Red),
-                new SolidColorBrush(Colors.Blue),
-            };
+            SetUpColors();
+            SetUpPainters();
+        }
 
-            _painters.Add(new MyLine());
-            _painters.Add(new MyRectangle());
-            _painters.Add(new MyEllipse());
-            _painters.Add(new MyRightArrow());
+        private void SetUpPainters() {
+            Painters.Add(new MyLine());
+            Painters.Add(new MyRectangle());
+            Painters.Add(new MyEllipse());
+            Painters.Add(new MyRightArrow());
+            Painters.Add(new MyText());
+            ShapeList.ItemsSource = Painters;
+        }
 
-            //LoadData();
-
+        private void SetUpColors() {
+            var colors = MyColorBrush.GetColors();
             ColorList.ItemsSource = colors;
             ColorList.SelectedIndex = 0;
             FillColorList.ItemsSource = colors;
-            ShapeList.ItemsSource = _painters;
         }
 
         private void RemoveFill_Click(object sender, RoutedEventArgs e) {
             FillColorList.SelectedIndex = -1;
         }
 
-        private void RibbonWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            
-        }
-
-        private void SaveData(string path) {
-            XmlWriter writer = XmlWriter.Create(path + _fileName);
-            List<Type> types = new();
-            foreach (var s in _painters) {
-                types.Add(s.GetType());
-            }   
-            List<MyShape> list = new List<MyShape>();
-            foreach (var shape in Prototypes) {
-                list.Add((MyShape) Convert.ChangeType(shape, shape.GetType()));
-            }
-
-            XmlSerializer serializer = new XmlSerializer(typeof(List<MyShape>), types.ToArray());
-            serializer.Serialize(writer, list);
-            writer.Close();
-        }
-
-        private void LoadData(string filepath) {
-            if (File.Exists(filepath)) {
-                XmlReader reader = XmlReader.Create(filepath);
-                List<MyShape>? list;
-                List<Type> types = [];
-                foreach (var s in _painters) {
-                    types.Add(s.GetType());
-                }
-                XmlSerializer serializer = new XmlSerializer(typeof(List<MyShape>), types.ToArray());
-                list = serializer.Deserialize(reader) as List<MyShape>;
-                if (list != null) {
-                    list.Reverse();
-                    foreach (var type in list) {
-                        Prototypes.Push(type);
-                        myCanvas.Children.Add(type.Convert());
-                    }
-                }
-            }
+        private void Export() {
+            _dataExporter = _dataFactory?.CreateExporter();
+            _dataExporter?.Accept(_exportVisitor);
+            _dataExporter?.Export();
         }
 
         private void Save_Click(object sender, RoutedEventArgs e) {
-            var dialog = new OpenFolderDialog();
-            dialog.Title = "Save file location";
-            if (dialog.ShowDialog() == true) {
-                string filePath = dialog.FolderName + "\\";
-                SaveData(filePath);
-            }
+            _dataFactory = XmlFactory.Instance;
+            Export();
         }
 
         private void SaveAs_Click(object sender, RoutedEventArgs e) {
-
+            _dataFactory = PngFactory.Instance;
+            Export();
         }
 
         private void Load_Click(object sender, RoutedEventArgs e) {
-            var dialog = new OpenFileDialog();
-            dialog.Title = "Load file";
-            dialog.Multiselect = false;
-            dialog.Filter = "Paint project | *.myext";
-            if (dialog.ShowDialog() == true) {
-                LoadData(dialog.FileName);
+            _dataFactory = XmlFactory.Instance;
+            _dataImporter = _dataFactory.CreateImporter();
+            _dataImporter.SetUp(Painters);
+
+            var list = (List<IShape>?) _dataImporter.Import();
+            if (list != null) {
+                list.Reverse();
+                Prototypes.Clear();
+                foreach (var type in list) {
+                    Prototypes.Push(type);
+                    myCanvas.Children.Add(type.Convert());
+                }
             }
         }
-        private void LoadImage_Click(object sender, RoutedEventArgs e) {
 
+        private void LoadImage_Click(object sender, RoutedEventArgs e) {
+            _dataFactory = PngFactory.Instance;
+            _dataImporter = _dataFactory.CreateImporter();
+
+            var image = (MyImage?) _dataImporter.Import();
+            if (image != null) {
+                Prototypes.Push(image);
+                myCanvas.Children.Add(image.Convert());
+            }
+        }
+
+        private void ChangePainter_Click(object sender, SelectionChangedEventArgs e) {
+            _painter = (IShape?) ShapeList.SelectedItem;
+        }
+
+        private void HandleTextBoxFocus(Point pos) {
+            var item = (MyShape)Prototypes.Peek();
+            var minX = item.First.X < item.Second.X ? item.First.X : item.Second.X;
+            var minY = item.First.Y < item.Second.Y ? item.First.Y : item.Second.Y;
+            if ((pos.X < minX) ||
+                (pos.X > (minX + Math.Abs(item.First.X - item.Second.X))) ||
+                (pos.Y < minY) ||
+                (pos.Y > (minY + Math.Abs(item.First.Y - item.Second.Y)))) {
+                FocusManager.SetFocusedElement(this, null);
+                _textBoxFocus = false;
+            }
+        }
+        private void StartDrawingAt(Point pos) {
+            if (_textBoxFocus)
+                return;
+
+            _isDrawing = true;
+            _painter?.AddFirst(pos);
+            _painter?.SetStrokeColor((SolidColorBrush)ColorList.SelectedItem);
+            _painter?.SetFill((SolidColorBrush)FillColorList.SelectedItem ?? (new SolidColorBrush(Colors.Transparent)));
+        }
+
+        private void RemovePreviousPreview(Canvas canvas) {
+            if (_isClick)
+                _isClick = false;
+            else
+                canvas.Children.RemoveAt(canvas.Children.Count - 1);
+        }
+
+        private void DrawPreviewAt(Point pos) {
+            _painter?.AddSecond(pos);
+            myCanvas.Children.Add(_painter?.Convert());
+        }
+
+        private void FinishDrawing() {
+            _isDrawing = false;
+            DeletedPrototypes.Clear();
+            Prototypes.Push((IShape)_painter.Clone());
+        }
+
+        private void HandleTextBoxDrawing(Canvas canvas) {
+            if (_painter?.GetType() == typeof(MyText)) {
+                canvas.Children[canvas.Children.Count - 1].Focus();
+                _textBoxFocus = true;
+            }
         }
     }
 }

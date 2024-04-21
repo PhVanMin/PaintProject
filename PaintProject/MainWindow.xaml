@@ -6,7 +6,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PaintProject"
         mc:Ignorable="d"
-        Closing="RibbonWindow_Closing"
         Loaded="RibbonWindow_Loaded"
         WindowStartupLocation="CenterScreen"
         Title="Project Paint" Height="600" Width="800">
@@ -31,7 +30,9 @@
                     </Fluent:SplitButton>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Shapes">
-                    <ListView Margin="5"
+                    <ListView
+                        SelectionChanged="ChangePainter_Click"
+                        Margin="5"
                         Name="ShapeList" 
                               ScrollViewer.VerticalScrollBarVisibility="Hidden"
                               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -57,7 +58,7 @@
                     ScrollViewer.VerticalScrollBarVisibility="Hidden"
                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                     Width="103" Height="65"
-                    HorizontalAlignment="Center" VerticalAlignment="Top" d:ItemsSource="{d:SampleData ItemCount=5}">       
+                    HorizontalAlignment="Center" VerticalAlignment="Top" d:ItemsSource="{d:SampleData ItemCount=5}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel />
@@ -92,7 +93,7 @@
                                 <Ellipse
                                     Width="15"
                                     Height="15"
-                                    Fill="{Binding}"/>      
+                                    Fill="{Binding}"/>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
@@ -100,8 +101,10 @@
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
         <Grid>
-            <Canvas x:Name="myCanvas"/>
-            <Canvas 
+            <Canvas Background="White" x:Name="myCanvas">
+                
+            </Canvas>
+            <Canvas
             Background="Transparent" 
             MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
             MouseMove="Canvas_MouseMove" 
