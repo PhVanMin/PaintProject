@@ -23,7 +23,13 @@ namespace PaintProject {
         public List<IShape> Painters = new List<IShape>();
         public Stack<IShape> Prototypes { get; } = new Stack<IShape>();
         public Stack<IShape> DeletedPrototypes { get; } = new Stack<IShape>();
-
+        private List<Tuple<string, string>> strokes = new List<Tuple<string, string>>
+        {
+            Tuple.Create(nameof(StrokeType.Solid), "/Images/solid.png"),
+            Tuple.Create(nameof(StrokeType.Dash), "/Images/dashed-line.png"),
+            Tuple.Create(nameof(StrokeType.Dot), "/Images/dot-line.png"),
+            Tuple.Create(nameof(StrokeType.DashDotDot), "/Images/dash-dot-dot-line.png"),
+        };
         public MainWindow() {
             InitializeComponent();
             _exportVisitor = new ExportVisitor(this);
@@ -38,25 +44,25 @@ namespace PaintProject {
                 switch (strokeType)
                 {
                     case "Solid":
-                        foreach (var shape in _painters)
+                        foreach (var shape in Painters)
                         {
                             shape.SetStrokeType(StrokeType.Solid);
                         }
                         break;
                     case "Dash":
-                        foreach (var shape in _painters)
+                        foreach (var shape in Painters)
                         {
                             shape.SetStrokeType(StrokeType.Dash);
                         }
                         break;
                     case "Dot":
-                        foreach (var shape in _painters)
+                        foreach (var shape in Painters)
                         {
                             shape.SetStrokeType(StrokeType.Dot);
                         }
                         break;
                     case "Dash dot dot":
-                        foreach (var shape in _painters)
+                        foreach (var shape in Painters)
                         {
                             shape.SetStrokeType(StrokeType.DashDotDot);
                         }
@@ -108,8 +114,6 @@ namespace PaintProject {
             ColorList.ItemsSource = colors;
             ColorList.SelectedIndex = 0;
             FillColorList.ItemsSource = colors;
-            ShapeList.ItemsSource = _painters;
-
             StrokeComboBox.ItemsSource = strokes;
         }
 

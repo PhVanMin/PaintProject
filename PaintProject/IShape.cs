@@ -13,6 +13,7 @@ namespace PaintProject {
         Dot,
         DashDotDot
     }
+
     public interface IShape : ICloneable {
         void AddFirst(Point point);
         void AddSecond(Point point);
@@ -30,6 +31,12 @@ namespace PaintProject {
         public Color? ColorFill { get; set; }
         public StrokeType LineStrokeType { get; set; } = StrokeType.Solid;
         public virtual string? Icon { get; }
+        protected static Dictionary<StrokeType, DoubleCollection?> strokeTypes = new() {
+            { StrokeType.Solid,  null},
+            { StrokeType.Dash,  new DoubleCollection(new double[] { 4, 2 })},
+            { StrokeType.Dot,  new DoubleCollection(new double[] { 1, 2 })},
+            { StrokeType.DashDotDot,  new DoubleCollection(new double[] { 4, 2, 1, 2 })},
+        };
 
         public void AddFirst(Point point) {
             First = point;
@@ -69,27 +76,10 @@ namespace PaintProject {
                 Height = Math.Abs(First.Y - Second.Y),
                 StrokeThickness = Thickness,
                 Stretch = Stretch.Fill,
-                Stroke = new SolidColorBrush(ColorStroke??Colors.Black),
+                Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black),
                 Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent),
+                StrokeDashArray = strokeTypes[LineStrokeType]
             };
-            switch (LineStrokeType) 
-            {
-                case StrokeType.Solid:
-                    item.StrokeDashArray = null;
-                    break;
-                case StrokeType.Dash:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2 });
-                    break;
-                case StrokeType.Dot:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 1, 2 });
-                    break;
-                case StrokeType.DashDotDot:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2, 1, 2 });
-                    break;
-                default:
-                    item.StrokeDashArray = null;
-                    break;
-            }
             Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
             Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
             return item;
@@ -107,27 +97,9 @@ namespace PaintProject {
                 X2 = Second.X,
                 Y2 = Second.Y,
                 StrokeThickness = Thickness,
-                Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black)
+                Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black),
+                StrokeDashArray = strokeTypes[LineStrokeType]
             };
-
-            switch (LineStrokeType)
-            {
-                case StrokeType.Solid:
-                    item.StrokeDashArray = null;
-                    break;
-                case StrokeType.Dash:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2 });
-                    break;
-                case StrokeType.Dot:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 1, 2 });
-                    break;
-                case StrokeType.DashDotDot:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2, 1, 2 });
-                    break;
-                default:
-                    item.StrokeDashArray = null;
-                    break;
-            }
 
             return item;
         }
@@ -140,26 +112,9 @@ namespace PaintProject {
                 Height = Math.Abs(First.Y - Second.Y),
                 StrokeThickness = Thickness,
                 Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black),
-                Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent)
+                Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent),
+                StrokeDashArray = strokeTypes[LineStrokeType]
             };
-            switch (LineStrokeType)
-            {
-                case StrokeType.Solid:
-                    item.StrokeDashArray = null;
-                    break;
-                case StrokeType.Dash:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2 });
-                    break;
-                case StrokeType.Dot:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 1, 2 });
-                    break;
-                case StrokeType.DashDotDot:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2, 1, 2 });
-                    break;
-                default:
-                    item.StrokeDashArray = null;
-                    break;
-            }
             Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
             Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
             return item;
@@ -174,25 +129,8 @@ namespace PaintProject {
                 StrokeThickness = Thickness,
                 Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black),
                 Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent),
+                StrokeDashArray = strokeTypes[LineStrokeType]
             };
-            switch (LineStrokeType)
-            {
-                case StrokeType.Solid:
-                    item.StrokeDashArray = null;
-                    break;
-                case StrokeType.Dash:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2 });
-                    break;
-                case StrokeType.Dot:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 1, 2 });
-                    break;
-                case StrokeType.DashDotDot:
-                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2, 1, 2 });
-                    break;
-                default:
-                    item.StrokeDashArray = null;
-                    break;
-            }
             Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
             Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
             return item;

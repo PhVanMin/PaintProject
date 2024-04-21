@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 using System.Xml;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace PaintProject {
     public interface IImporter {
@@ -37,7 +38,7 @@ namespace PaintProject {
                 List<MyShape>? list;
                 list = serializer.Deserialize(reader) as List<MyShape>;
                 reader.Close();
-                return list;
+                return list?.ConvertAll(s => (IShape) s);
             }
 
             return null;
