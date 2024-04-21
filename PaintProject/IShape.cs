@@ -6,13 +6,21 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
 namespace PaintProject {
+    public enum StrokeType
+    {
+        Solid,
+        Dash,
+        Dot,
+        DashDotDot
+    }
     public interface IShape : ICloneable {
         void AddFirst(Point point);
         void AddSecond(Point point);
-        UIElement Convert();
-        void SetFill(SolidColorBrush colorFill);
-        void SetStrokeColor(SolidColorBrush colorStroke);
         void SetThickness(double thickness);
+        void SetStrokeColor(SolidColorBrush colorStroke);
+        void SetFill(SolidColorBrush colorFill);
+        void SetStrokeType(StrokeType strokeType);
+        UIElement Convert();
     }
     public class MyShape : IShape {
         public Point First { get; set; }
@@ -20,6 +28,7 @@ namespace PaintProject {
         public double Thickness { get; set; } = 1;
         public Color? ColorStroke { get; set; }
         public Color? ColorFill { get; set; }
+        public StrokeType LineStrokeType { get; set; } = StrokeType.Solid;
         public virtual string? Icon { get; }
 
         public void AddFirst(Point point) {
@@ -45,10 +54,14 @@ namespace PaintProject {
         public void SetThickness(double thickness) {
             Thickness = thickness;
         }
+        public void SetStrokeType(StrokeType strokeType)
+        {
+            LineStrokeType = strokeType;
+        }
     }
     public class MyRightArrow : MyShape {
         public override string Icon => $"/Images/{nameof(MyRightArrow)}.png";
-
+       
         public override UIElement Convert() {
             var item = new Path() {
                 Data = Geometry.Parse("M0,50 L100,50 L100,0 L200,80 L100,160 L100,110 L0,110 L0,50"),
@@ -59,6 +72,24 @@ namespace PaintProject {
                 Stroke = new SolidColorBrush(ColorStroke??Colors.Black),
                 Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent),
             };
+            switch (LineStrokeType) 
+            {
+                case StrokeType.Solid:
+                    item.StrokeDashArray = null;
+                    break;
+                case StrokeType.Dash:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2 });
+                    break;
+                case StrokeType.Dot:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 1, 2 });
+                    break;
+                case StrokeType.DashDotDot:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2, 1, 2 });
+                    break;
+                default:
+                    item.StrokeDashArray = null;
+                    break;
+            }
             Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
             Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
             return item;
@@ -67,8 +98,10 @@ namespace PaintProject {
     public class MyLine : MyShape {
         public override string Icon => "/Images/Line.png";
 
-        public override UIElement Convert() {
-            return new Line() {
+        public override UIElement Convert()
+        {
+            var item = new Line()
+            {
                 X1 = First.X,
                 Y1 = First.Y,
                 X2 = Second.X,
@@ -76,11 +109,31 @@ namespace PaintProject {
                 StrokeThickness = Thickness,
                 Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black)
             };
+
+            switch (LineStrokeType)
+            {
+                case StrokeType.Solid:
+                    item.StrokeDashArray = null;
+                    break;
+                case StrokeType.Dash:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2 });
+                    break;
+                case StrokeType.Dot:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 1, 2 });
+                    break;
+                case StrokeType.DashDotDot:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2, 1, 2 });
+                    break;
+                default:
+                    item.StrokeDashArray = null;
+                    break;
+            }
+
+            return item;
         }
     }
     public class MyRectangle : MyShape {
         public override string Icon => "/Images/Rectangle.png";
-
         public override UIElement Convert() {
             var item = new Rectangle() {
                 Width = Math.Abs(First.X - Second.X),
@@ -89,6 +142,24 @@ namespace PaintProject {
                 Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black),
                 Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent)
             };
+            switch (LineStrokeType)
+            {
+                case StrokeType.Solid:
+                    item.StrokeDashArray = null;
+                    break;
+                case StrokeType.Dash:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2 });
+                    break;
+                case StrokeType.Dot:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 1, 2 });
+                    break;
+                case StrokeType.DashDotDot:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2, 1, 2 });
+                    break;
+                default:
+                    item.StrokeDashArray = null;
+                    break;
+            }
             Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
             Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
             return item;
@@ -104,6 +175,24 @@ namespace PaintProject {
                 Stroke = new SolidColorBrush(ColorStroke ?? Colors.Black),
                 Fill = new SolidColorBrush(ColorFill ?? Colors.Transparent),
             };
+            switch (LineStrokeType)
+            {
+                case StrokeType.Solid:
+                    item.StrokeDashArray = null;
+                    break;
+                case StrokeType.Dash:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2 });
+                    break;
+                case StrokeType.Dot:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 1, 2 });
+                    break;
+                case StrokeType.DashDotDot:
+                    item.StrokeDashArray = new DoubleCollection(new double[] { 4, 2, 1, 2 });
+                    break;
+                default:
+                    item.StrokeDashArray = null;
+                    break;
+            }
             Canvas.SetLeft(item, First.X < Second.X ? First.X : Second.X);
             Canvas.SetTop(item, First.Y < Second.Y ? First.Y : Second.Y);
             return item;

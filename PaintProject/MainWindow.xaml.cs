@@ -29,7 +29,41 @@ namespace PaintProject {
             _exportVisitor = new ExportVisitor(this);
             InputBindings.AddRange(Shortcut.Create(myCanvas, Prototypes, DeletedPrototypes).KeyBindings);        
         }
-
+        private void StrokeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Tuple<string, string>? selectedItem = (Tuple<string, string>)StrokeComboBox.SelectedItem;
+            if (selectedItem != null)
+            {
+                string strokeType = selectedItem.Item1; 
+                switch (strokeType)
+                {
+                    case "Solid":
+                        foreach (var shape in _painters)
+                        {
+                            shape.SetStrokeType(StrokeType.Solid);
+                        }
+                        break;
+                    case "Dash":
+                        foreach (var shape in _painters)
+                        {
+                            shape.SetStrokeType(StrokeType.Dash);
+                        }
+                        break;
+                    case "Dot":
+                        foreach (var shape in _painters)
+                        {
+                            shape.SetStrokeType(StrokeType.Dot);
+                        }
+                        break;
+                    case "Dash dot dot":
+                        foreach (var shape in _painters)
+                        {
+                            shape.SetStrokeType(StrokeType.DashDotDot);
+                        }
+                        break;
+                }
+            }
+        }
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             if (_textBoxFocus) {
                 HandleTextBoxFocus(e.GetPosition(myCanvas));
@@ -74,6 +108,9 @@ namespace PaintProject {
             ColorList.ItemsSource = colors;
             ColorList.SelectedIndex = 0;
             FillColorList.ItemsSource = colors;
+            ShapeList.ItemsSource = _painters;
+
+            StrokeComboBox.ItemsSource = strokes;
         }
 
         private void RemoveFill_Click(object sender, RoutedEventArgs e) {
