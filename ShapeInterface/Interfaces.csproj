@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Dash.png" />
+    <None Remove="DashDot.png" />
+    <None Remove="Dot.png" />
+    <None Remove="solid.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="DashDot.png" />
+    <Resource Include="Dash.png" />
+    <Resource Include="Dot.png" />
+    <Resource Include="Solid.png" />
+  </ItemGroup>
+
+</Project>

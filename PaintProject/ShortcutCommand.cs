@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using Interfaces;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -39,17 +34,21 @@ namespace PaintProject {
     public class Shortcut
     {
         public List<KeyBinding> KeyBindings { get; }
-        Canvas _canvas;
-        Stack<IShape> _Prototypes;
-        Stack<IShape> _DeletedPrototypes;
-        public static Shortcut Create(Canvas canvas, Stack<IShape> Prototypes, Stack<IShape> DeletedPrototypes) {
-            return new Shortcut(canvas, Prototypes, DeletedPrototypes);
+        private Canvas _canvas;
+        private Stack<BaseShape> _Prototypes;
+        private Stack<BaseShape> _DeletedPrototypes;
+        public static Shortcut Create(MainWindow window) {
+            return new Shortcut(
+                window.myCanvas, 
+                window.Prototypes, 
+                window.DeletedPrototypes
+            );
         }
 
-        public Shortcut(Canvas canvas, Stack<IShape> Prototypes, Stack<IShape> DeletedPrototypes) {
+        private Shortcut(Canvas canvas, Stack<BaseShape> prototypes, Stack<BaseShape> deletedPrototype) {
             _canvas = canvas;
-            _Prototypes = Prototypes;
-            _DeletedPrototypes = DeletedPrototypes;
+            _Prototypes = prototypes;
+            _DeletedPrototypes = deletedPrototype;
             KeyBindings = new List<KeyBinding>() {
                 new KeyBinding(RelayCommand.Create(Redo), new KeyGesture(Key.Z, ModifierKeys.Shift | ModifierKeys.Control)),
                 new KeyBinding(RelayCommand.Create(Undo), new KeyGesture(Key.Z, ModifierKeys.Control)),

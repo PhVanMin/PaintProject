@@ -1,112 +1,99 @@
 ﻿using Fluent;
+using Interfaces;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Media3D;
 using System.Windows.Media;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System;
 
 namespace PaintProject {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : RibbonWindow {
-        private bool _isDrawing = false;
-        private bool _isClick;
-        private bool _textBoxFocus = false;
+        public bool isDrawing = false;
+        public bool isClick;
+        public bool itemFocus = false;
 
-        private IShape? _painter = null;
-        IFactory? _dataFactory;
-        IExporter? _dataExporter;
-        IImporter? _dataImporter;
-        ExportVisitor _exportVisitor;
+        public BaseShape? painter = null;
+        private IFactory? _exporterFactory;
+        private IExporter? _dataExporter;
+        private IImporter? _dataImporter;
+        private ExportVisitor _exporterVisitor;
+        private ImportVisitor _importerVisitor;
+        private double _factor = 1;
+        private Point _lastMousePositionOnTarget;
 
-        public List<IShape> Painters = new List<IShape>();
-        public Stack<IShape> Prototypes { get; } = new Stack<IShape>();
-        public Stack<IShape> DeletedPrototypes { get; } = new Stack<IShape>();
-        private List<Tuple<string, string>> strokes = new List<Tuple<string, string>>
-        {
-            Tuple.Create(nameof(StrokeType.Solid), "/Images/solid.png"),
-            Tuple.Create(nameof(StrokeType.Dash), "/Images/dashed-line.png"),
-            Tuple.Create(nameof(StrokeType.Dot), "/Images/dot-line.png"),
-            Tuple.Create(nameof(StrokeType.DashDotDot), "/Images/dash-dot-dot-line.png"),
-        };
+        public delegate void MouseEventHandler(MainWindow window, MouseEventArgs e);
+        private event MouseEventHandler? _leftButtonDownHandler;
+        private event MouseEventHandler? _mouseMoveHandler;
+        private event MouseEventHandler? _leftButtonUpHandler;
+
+        public List<Type> SupportedType { get; } = new();
+        private List<BaseShape> _painters = new();
+        public Stack<BaseShape> Prototypes { get; set; } = new();
+        public Stack<BaseShape> DeletedPrototypes { get; } = new();
         public MainWindow() {
             InitializeComponent();
-            _exportVisitor = new ExportVisitor(this);
-            InputBindings.AddRange(Shortcut.Create(myCanvas, Prototypes, DeletedPrototypes).KeyBindings);        
+            _exporterVisitor = new ExportVisitor(this);
+            _importerVisitor = new ImportVisitor(this);
+            
         }
-        private void StrokeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            Tuple<string, string>? selectedItem = (Tuple<string, string>)StrokeComboBox.SelectedItem;
-            if (selectedItem != null)
-            {
-                string strokeType = selectedItem.Item1; 
-                switch (strokeType)
-                {
-                    case "Solid":
-                        foreach (var shape in Painters)
-                        {
-                            shape.SetStrokeType(StrokeType.Solid);
-                        }
-                        break;
-                    case "Dash":
-                        foreach (var shape in Painters)
-                        {
-                            shape.SetStrokeType(StrokeType.Dash);
-                        }
-                        break;
-                    case "Dot":
-                        foreach (var shape in Painters)
-                        {
-                            shape.SetStrokeType(StrokeType.Dot);
-                        }
-                        break;
-                    case "Dash dot dot":
-                        foreach (var shape in Painters)
-                        {
-                            shape.SetStrokeType(StrokeType.DashDotDot);
-                        }
-                        break;
-                }
-            }
-        }
+
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-            if (_textBoxFocus) {
-                HandleTextBoxFocus(e.GetPosition(myCanvas));
-            } else if (_painter != null) {
-                _isClick = true;
-                StartDrawingAt(e.GetPosition(myCanvas));
-            }
+            _leftButtonDownHandler?.Invoke(this, e);
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e) {
-            if (_isDrawing) {
-                RemovePreviousPreview(myCanvas);
-                DrawPreviewAt(e.GetPosition(myCanvas));
-            }
+            _mouseMoveHandler?.Invoke(this, e);
         }
-        
+
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
-            if (_isDrawing && !_isClick) {
-                HandleTextBoxDrawing(myCanvas);
-                FinishDrawing();
-            } else {
-                _isDrawing = false;
-            }
+            _leftButtonUpHandler?.Invoke(this, e);
         }
 
         private void RibbonWindow_Loaded(object sender, RoutedEventArgs e) {
+            SetUpMouseHanlders();
+            SetUpKeyBindings();
             SetUpColors();
             SetUpPainters();
+            SetUpStrokes();
+        }
+
+        private void SetUpMouseHanlders() {
+            _leftButtonDownHandler += LeftButtonDownHandler.HandleLeftButtonDown;
+            _mouseMoveHandler += MouseMoveHandler.HandleMouseMove;
+            _leftButtonUpHandler += LeftButtonUpHandler.HandleLeftButtonUp;
+        }
+
+        private void SetUpKeyBindings() {
+            InputBindings.AddRange(Shortcut.Create(this).KeyBindings);
         }
 
         private void SetUpPainters() {
-            Painters.Add(new MyLine());
-            Painters.Add(new MyRectangle());
-            Painters.Add(new MyEllipse());
-            Painters.Add(new MyRightArrow());
-            Painters.Add(new MyText());
-            ShapeList.ItemsSource = Painters;
+            string folder = AppDomain.CurrentDomain.BaseDirectory;
+            var fis = new DirectoryInfo(folder).GetFiles("*.dll");
+
+            foreach (var fi in fis) {
+                // Lấy tất cả kiểu dữ liệu trong dll
+                var assembly = Assembly.LoadFrom(fi.FullName);
+                var types = assembly.GetTypes();
+
+                foreach (var type in types) {
+                    if ((type.IsClass) && (type != typeof(BaseShape))
+                        && (typeof(BaseShape).IsAssignableFrom(type))) {
+                        var shape = (BaseShape)Activator.CreateInstance(type)!;
+                        if (shape.Icon != null) {
+                            _painters.Add(shape);
+                        }
+                        SupportedType.Add(shape.GetType());
+                    }
+                }
+            }
+            ShapeList.ItemsSource = _painters;
         }
 
         private void SetUpColors() {
@@ -114,7 +101,26 @@ namespace PaintProject {
             ColorList.ItemsSource = colors;
             ColorList.SelectedIndex = 0;
             FillColorList.ItemsSource = colors;
-            StrokeComboBox.ItemsSource = strokes;
+        }
+
+        private void SetUpStrokes() {
+            string folder = AppDomain.CurrentDomain.BaseDirectory;
+            var fis = new DirectoryInfo(folder).GetFiles("*.dll");
+
+            foreach (var fi in fis) {
+                // Lấy tất cả kiểu dữ liệu trong dll
+                var assembly = Assembly.LoadFrom(fi.FullName);
+                var types = assembly.GetTypes();
+
+                foreach (var type in types) {
+                    if ((type.IsClass)
+                        && (typeof(IStrokeType).IsAssignableFrom(type))) {
+                        var stroke = (IStrokeType)Activator.CreateInstance(type)!;
+                        StrokeComboBox.Items.Add(stroke);
+                    }
+                }
+            }
+            StrokeComboBox.SelectedIndex = 0;
         }
 
         private void RemoveFill_Click(object sender, RoutedEventArgs e) {
@@ -122,97 +128,86 @@ namespace PaintProject {
         }
 
         private void Export() {
-            _dataExporter = _dataFactory?.CreateExporter();
-            _dataExporter?.Accept(_exportVisitor);
-            _dataExporter?.Export();
+            _dataExporter = _exporterFactory?.CreateExporter();
+            _dataExporter?.Accept(_exporterVisitor);
         }
 
         private void Save_Click(object sender, RoutedEventArgs e) {
-            _dataFactory = XmlFactory.Instance;
+            _exporterFactory = XmlFactory.Instance;
             Export();
         }
 
         private void SaveAs_Click(object sender, RoutedEventArgs e) {
-            _dataFactory = PngFactory.Instance;
+            _exporterFactory = PngFactory.Instance;
             Export();
         }
 
-        private void Load_Click(object sender, RoutedEventArgs e) {
-            _dataFactory = XmlFactory.Instance;
-            _dataImporter = _dataFactory.CreateImporter();
-            _dataImporter.SetUp(Painters);
+        private void Import() {
+            _dataImporter = _exporterFactory?.CreateImporter();
+            Prototypes.Clear();
+            DeletedPrototypes.Clear();
+            _dataImporter?.Accept(_importerVisitor);
+        }
 
-            var list = (List<IShape>?) _dataImporter.Import();
-            if (list != null) {
-                list.Reverse();
-                Prototypes.Clear();
-                foreach (var type in list) {
-                    Prototypes.Push(type);
-                    myCanvas.Children.Add(type.Convert());
-                }
-            }
+        private void Load_Click(object sender, RoutedEventArgs e) {
+            _exporterFactory = XmlFactory.Instance;
+            Import();
         }
 
         private void LoadImage_Click(object sender, RoutedEventArgs e) {
-            _dataFactory = PngFactory.Instance;
-            _dataImporter = _dataFactory.CreateImporter();
-
-            var image = (MyImage?) _dataImporter.Import();
-            if (image != null) {
-                Prototypes.Push(image);
-                myCanvas.Children.Add(image.Convert());
-            }
+            _exporterFactory = PngFactory.Instance;
+            Import();
         }
 
         private void ChangePainter_Click(object sender, SelectionChangedEventArgs e) {
-            _painter = (IShape?) ShapeList.SelectedItem;
+            painter = (BaseShape?)ShapeList.SelectedItem;
         }
 
-        private void HandleTextBoxFocus(Point pos) {
-            var item = (MyShape)Prototypes.Peek();
-            var minX = item.First.X < item.Second.X ? item.First.X : item.Second.X;
-            var minY = item.First.Y < item.Second.Y ? item.First.Y : item.Second.Y;
-            if ((pos.X < minX) ||
-                (pos.X > (minX + Math.Abs(item.First.X - item.Second.X))) ||
-                (pos.Y < minY) ||
-                (pos.Y > (minY + Math.Abs(item.First.Y - item.Second.Y)))) {
-                FocusManager.SetFocusedElement(this, null);
-                _textBoxFocus = false;
+        private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e) {
+            _lastMousePositionOnTarget = Mouse.GetPosition(grid);
+
+            if (e.Delta > 0) {
+                _factor += 0.1;
+            }
+            if (e.Delta < 0) {
+                _factor -= 0.1;
+            }
+
+            scaleTransform.ScaleX = _factor;
+            scaleTransform.ScaleY = _factor;
+        }
+
+        void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e) {
+            if (e.ExtentHeightChange != 0 || e.ExtentWidthChange != 0) {
+                Point targetBefore;
+                Point targetNow;
+
+
+                targetBefore = _lastMousePositionOnTarget;
+                targetNow = Mouse.GetPosition(grid);
+
+                double dXInTargetPixels = targetNow.X - targetBefore.X;
+                double dYInTargetPixels = targetNow.Y - targetBefore.Y;
+
+                double multiplicatorX = e.ExtentWidth / grid.Width;
+                double multiplicatorY = e.ExtentHeight / grid.Height;
+
+                double newOffsetX = s.HorizontalOffset -
+                                    dXInTargetPixels * multiplicatorX;
+                double newOffsetY = s.VerticalOffset -
+                                    dYInTargetPixels * multiplicatorY;
+
+                if (double.IsNaN(newOffsetX) || double.IsNaN(newOffsetY)) {
+                    return;
+                }
+
+                s.ScrollToHorizontalOffset(newOffsetX);
+                s.ScrollToVerticalOffset(newOffsetY);
             }
         }
-        private void StartDrawingAt(Point pos) {
-            if (_textBoxFocus)
-                return;
 
-            _isDrawing = true;
-            _painter?.AddFirst(pos);
-            _painter?.SetStrokeColor((SolidColorBrush)ColorList.SelectedItem);
-            _painter?.SetFill((SolidColorBrush)FillColorList.SelectedItem ?? (new SolidColorBrush(Colors.Transparent)));
-        }
+        private void Canvas_MouseLeave(object sender, MouseEventArgs e) {
 
-        private void RemovePreviousPreview(Canvas canvas) {
-            if (_isClick)
-                _isClick = false;
-            else
-                canvas.Children.RemoveAt(canvas.Children.Count - 1);
-        }
-
-        private void DrawPreviewAt(Point pos) {
-            _painter?.AddSecond(pos);
-            myCanvas.Children.Add(_painter?.Convert());
-        }
-
-        private void FinishDrawing() {
-            _isDrawing = false;
-            DeletedPrototypes.Clear();
-            Prototypes.Push((IShape)_painter.Clone());
-        }
-
-        private void HandleTextBoxDrawing(Canvas canvas) {
-            if (_painter?.GetType() == typeof(MyText)) {
-                canvas.Children[canvas.Children.Count - 1].Focus();
-                _textBoxFocus = true;
-            }
         }
     }
 }

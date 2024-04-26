@@ -52,13 +52,12 @@
                     </ListView>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox Header="Stroke">
-                    <ComboBox x:Name="StrokeComboBox" SelectionChanged="StrokeComboBox_SelectionChanged" Width="80"
-          Height="50" Margin="5">
+                    <ComboBox VerticalContentAlignment="Center" x:Name="StrokeComboBox"  Width="100" Height="65" Margin="5">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <Image Source="{Binding Item2}" Width="30" Height="30"/>
-                                    <TextBlock Text="{Binding Item1}" Margin="10"/>
+                                    <Image Source="{Binding Image}" Width="30" Height="30"/>
+                                    <TextBlock Text="{Binding Name}" Margin="10"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
@@ -113,15 +112,44 @@
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
-        <Grid>
-            <Canvas Background="White" x:Name="myCanvas">
-                
-            </Canvas>
-            <Canvas
-            Background="Transparent" 
-            MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
-            MouseMove="Canvas_MouseMove" 
-            MouseLeftButtonUp="Canvas_MouseLeftButtonUp"/>
-        </Grid>
+        <StatusBar DockPanel.Dock="Bottom" Padding="5 0">
+            <StatusBarItem HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Zoom" Margin="0 0 5 0"/>
+                    <TextBox x:Name="ScaleValue" IsEnabled="False" Text="100%"  Margin="0 0 10 0">
+                    <TextBox.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="3"/>
+                        </Style>
+                    </TextBox.Resources>
+                </TextBox>
+                </StackPanel>
+            </StatusBarItem>
+        </StatusBar>
+        <ScrollViewer
+            ScrollChanged="OnScrollViewerScrollChanged"
+            Background="#F7F7F7"
+            Name="s" 
+            HorizontalScrollBarVisibility="Auto" 
+            VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="grid" RenderTransformOrigin="0.5 0.5">
+                <Grid.LayoutTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="scaleTransform"/>
+                    </TransformGroup>
+                </Grid.LayoutTransform>
+                <Border Height="400" Width="730" BorderThickness="1" BorderBrush="Black">
+                    <Canvas Background="White" x:Name="myCanvas"/>
+                </Border>
+                <Canvas
+                    MouseLeave="Canvas_MouseLeave"
+                        Height="400" Width="730"
+                        MouseWheel="Canvas_MouseWheel"
+                        Background="Transparent" 
+                        MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                        MouseMove="Canvas_MouseMove" 
+                        MouseLeftButtonUp="Canvas_MouseLeftButtonUp"/>
+            </Grid>
+        </ScrollViewer>
     </DockPanel>
 </Fluent:RibbonWindow>
