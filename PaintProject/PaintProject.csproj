@@ -26,6 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MyEllipse\MyEllipse.csproj" />
+    <ProjectReference Include="..\MyLine\MyLine.csproj" />
+    <ProjectReference Include="..\MyRectangle\MyRectangle.csproj" />
     <ProjectReference Include="..\ShapeInterface\Interfaces.csproj" />
   </ItemGroup>
 
