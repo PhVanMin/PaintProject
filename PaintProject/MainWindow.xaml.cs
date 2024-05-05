@@ -168,11 +168,13 @@ namespace PaintProject {
 
             if (e.Delta > 0) {
                 _factor += 0.1;
+                if (_factor > 3) _factor = 3;
             }
             if (e.Delta < 0) {
                 _factor -= 0.1;
+                if (_factor < 0.2) _factor = 0.2;
             }
-
+            ScaleValue.Text = $"{Math.Round(100 * _factor)}%";
             scaleTransform.ScaleX = _factor;
             scaleTransform.ScaleY = _factor;
         }
@@ -189,8 +191,8 @@ namespace PaintProject {
                 double dXInTargetPixels = targetNow.X - targetBefore.X;
                 double dYInTargetPixels = targetNow.Y - targetBefore.Y;
 
-                double multiplicatorX = e.ExtentWidth / grid.Width;
-                double multiplicatorY = e.ExtentHeight / grid.Height;
+                double multiplicatorX = e.ExtentWidth / grid.ActualWidth;
+                double multiplicatorY = e.ExtentHeight / grid.ActualHeight;
 
                 double newOffsetX = s.HorizontalOffset -
                                     dXInTargetPixels * multiplicatorX;
